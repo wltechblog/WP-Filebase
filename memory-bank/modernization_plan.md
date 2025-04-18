@@ -138,6 +138,7 @@ To maintain compatibility with existing data while modernizing the code:
    - ✅ Updated Category.php to use prepared statements
    - ✅ Updated File.php to use prepared statements
    - ✅ Updated AdminGuiManage.php to use safer queries
+   - ✅ Updated Setup.php to use prepared statements for database updates
    - 🔄 Continue updating other files with direct SQL queries
 3. Add nonces to all forms
 4. Properly escape all output

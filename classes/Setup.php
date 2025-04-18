@@ -311,14 +311,7 @@ Your browser does not support the video tag.  <a href='%file_url%'>Open Video di
   FULLTEXT KEY `USER_ROLES` (`file_user_roles`)
 ) ENGINE=$engine  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1";
 
-        $queries[] = "CREATE TABLE IF NOT EXISTS `$tbl_files_id3` (
-  `file_id` bigint(20) unsigned NOT NULL auto_increment,
-  `analyzetime` INT(11) NOT NULL DEFAULT '0',
-  `value` LONGTEXT NOT NULL,
-  `keywords` TEXT NOT NULL,
-  PRIMARY KEY  (`file_id`),
-  FULLTEXT KEY `KEYWORDS` (`keywords`)
-) ENGINE=$engine  DEFAULT CHARSET=utf8";
+        // ID3 table removed for PHP 8.0+ compatibility
 
 
 
@@ -366,8 +359,7 @@ Your browser does not support the video tag.  <a href='%file_url%'>Open Video di
         // since 0.2.9.9
         $queries[] = "@ALTER TABLE `$tbl_files` ADD `file_tags` varchar(255) NOT NULL default ''  AFTER `file_description`";
 
-        // 0.2.9.10
-        $queries[] = "@ALTER TABLE `$tbl_files_id3` CHANGE `value` `value` LONGTEXT";
+        // 0.2.9.10 - ID3 table removed for PHP 8.0+ compatibility
 
         // 0.2.9.12
         $queries[] = "@ALTER TABLE `$tbl_cats` ADD `cat_order` int(8) NOT NULL default '0'  AFTER `cat_exclude_browser`";
@@ -387,7 +379,7 @@ Your browser does not support the video tag.  <a href='%file_url%'>Open Video di
         if (!empty($old_ver) && version_compare($old_ver, '0.2.9.24') < 0) {    // TODO: search fields fulltext index!
             $queries[] = "@ALTER TABLE `$tbl_files` ADD FULLTEXT `USER_ROLES` (`file_user_roles`)";
             $queries[] = "@ALTER TABLE `$tbl_cats` ADD FULLTEXT `USER_ROLES` (`cat_user_roles`)";
-            $queries[] = "@ALTER TABLE `$tbl_files_id3` ADD FULLTEXT `KEYWORDS` (`keywords`)";
+            // ID3 table removed for PHP 8.0+ compatibility
         }
 
         // 2 is for file pages
@@ -446,7 +438,7 @@ Your browser does not support the video tag.  <a href='%file_url%'>Open Video di
 
         // dont use wpdb->query, because it prints errors
         foreach ($queries as $sql) {
-            if ($sql{0} == '@') {
+            if ($sql[0] == '@') {
                 $sql = substr($sql, 1);
                 $wpdb->suppress_errors();
                 $wpdb->query($sql);
@@ -463,7 +455,13 @@ Your browser does not support the video tag.  <a href='%file_url%'>Open Video di
 
             $files = $wpdb->get_results("SELECT file_id,file_date FROM $tbl_files");
             foreach ((array)$files as $file) {
-                $wpdb->query("UPDATE `$tbl_files` SET `file_mtime` = '" . mysql2date('U', $file->file_date) . "' WHERE `file_id` = $file->file_id");
+                // Use strtotime instead of mysql2date for PHP 7.0+ compatibility
+                $timestamp = strtotime($file->file_date);
+                $wpdb->query($wpdb->prepare(
+                    "UPDATE `$tbl_files` SET `file_mtime` = %d WHERE `file_id` = %d",
+                    $timestamp,
+                    $file->file_id
+                ));
             }
             // this is faster, but UNIX_TIMESTAMP adds leap seconds, so all files will be synced again!
             //$wpdb->query("UPDATE `$tbl_files` SET `file_mtime` = UNIX_TIMESTAMP(`file_date`) WHERE file_mtime = 0;");
@@ -474,7 +472,12 @@ Your browser does not support the video tag.  <a href='%file_url%'>Open Video di
         if (!!$wpdb->get_var("SHOW COLUMNS FROM `$tbl_files` LIKE 'file_required_level'")) {
             $files = $wpdb->get_results("SELECT file_id,file_required_level FROM $tbl_files WHERE file_required_level <> 0");
             foreach ((array)$files as $file) {
-                $wpdb->query("UPDATE `$tbl_files` SET `file_user_roles` = '|" . WPFB_Setup::UserLevel2Role($file->file_required_level - 1) . "' WHERE `file_id` = $file->file_id");
+                $user_role = '|' . WPFB_Setup::UserLevel2Role($file->file_required_level - 1);
+                $wpdb->query($wpdb->prepare(
+                    "UPDATE `$tbl_files` SET `file_user_roles` = %s WHERE `file_id` = %d",
+                    $user_role,
+                    $file->file_id
+                ));
             }
             $wpdb->query("ALTER TABLE `$tbl_files` DROP `file_required_level`");
         }
@@ -482,7 +485,12 @@ Your browser does not support the video tag.  <a href='%file_url%'>Open Video di
         if (!!$wpdb->get_var("SHOW COLUMNS FROM `$tbl_cats` LIKE 'cat_required_level'")) {
             $cats = $wpdb->get_results("SELECT cat_id,cat_required_level FROM $tbl_cats WHERE cat_required_level <> 0");
             foreach ((array)$cats as $cat) {
-                $wpdb->query("UPDATE `$tbl_cats` SET `cat_user_roles` = '|" . WPFB_Setup::UserLevel2Role($cat->cat_required_level - 1) . "' WHERE `cat_id` = $cat->cat_id");
+                $user_role = '|' . WPFB_Setup::UserLevel2Role($cat->cat_required_level - 1);
+                $wpdb->query($wpdb->prepare(
+                    "UPDATE `$tbl_cats` SET `cat_user_roles` = %s WHERE `cat_id` = %d",
+                    $user_role,
+                    $cat->cat_id
+                ));
             }
             $wpdb->query("ALTER TABLE `$tbl_cats` DROP `cat_required_level`");
         }
@@ -509,8 +517,7 @@ Your browser does not support the video tag.  <a href='%file_url%'>Open Video di
     static function DropDBTables()
     {
         global $wpdb;
-        $tables = array($wpdb->wpfilebase_files, $wpdb->wpfilebase_files_id3, $wpdb->wpfilebase_cats
-        );
+        $tables = array($wpdb->wpfilebase_files, $wpdb->wpfilebase_cats);
         foreach ($tables as $tbl)
             $wpdb->query("DROP TABLE IF EXISTS `$tbl`");
     }
