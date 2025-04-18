@@ -83,11 +83,14 @@ class WPFB_AdminGuiCats {
             //wp_redirect($clean_uri . '&action=manage_cats&message=' . urlencode($message));
 
             default:
-                if (!empty($_POST['deleteit'])) {
+                // Check nonce for security
+                if (!empty($_POST['deleteit']) && isset($_POST['_wpnonce']) && wp_verify_nonce($_POST['_wpnonce'], 'bulk-categories')) {
                     foreach ((array) $_POST['delete'] as $cat_id) {
                         if (is_object($cat = WPFB_Category::GetCat($cat_id)) && $cat->CurUserCanEdit())
                             $cat->Delete();
                     }
+                } elseif (!empty($_POST['deleteit'])) {
+                    wp_die(__('Security check failed. Please try again.', 'wp-filebase'));
                 }
 
                 if (!empty($_REQUEST['redirect']) && !empty($_REQUEST['redirect_to'])) {

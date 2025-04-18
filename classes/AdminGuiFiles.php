@@ -95,7 +95,8 @@ static function Display()
 				exit;
 			}
 			
-			if(!empty($_POST['deleteit'])) {
+			// Check nonce for security
+				if(!empty($_POST['deleteit']) && isset($_POST['wpfb-file-list-nonce']) && wp_verify_nonce($_POST['wpfb-file-list-nonce'], 'wpfb-file-list-actions')) {
 				foreach ( (array)$_POST['delete'] as $file_id ) {					
 					if(is_object($file = WPFB_File::GetFile($file_id)) && $file->CurUserCanDelete())
 						$file->Remove(true);
@@ -130,7 +131,11 @@ $file_table->prepare_items();
  
 <?php $file_table->views(); ?>
  <form id="posts-filter" action="" method="post">
- <?php $file_table->display() ?>
+ <?php 
+    // Add nonce field for security
+    wp_nonce_field('wpfb-file-list-actions', 'wpfb-file-list-nonce');
+    $file_table->display() 
+ ?>
  </form>
  <br class="clear" />
 

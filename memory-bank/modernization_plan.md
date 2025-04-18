@@ -140,7 +140,11 @@ To maintain compatibility with existing data while modernizing the code:
    - ✅ Updated AdminGuiManage.php to use safer queries
    - ✅ Updated Setup.php to use prepared statements for database updates
    - 🔄 Continue updating other files with direct SQL queries
-3. Add nonces to all forms
+3. 🔄 Add nonces to all forms
+   - ✅ Added nonce field to file list form in AdminGuiFiles.php
+   - ✅ Added nonce verification to file deletion in AdminGuiFiles.php
+   - ✅ Added nonce verification to category deletion in AdminGuiCats.php
+   - 🔄 Continue adding nonces to other forms
 4. Properly escape all output
 
 ## Phase 3: Code Modernization
