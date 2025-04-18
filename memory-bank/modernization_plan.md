@@ -121,13 +121,17 @@ To maintain compatibility with existing data while modernizing the code:
    - ✅ Updated Output.php with strict comparisons
    - ✅ Updated AdminGuiManage.php with strict comparisons
 5. ✅ Verify no deprecated PHP functions are being used (mysql_*, ereg*, split, session_register, etc.)
-6. 🔄 Fix any other PHP 7.0+ compatibility issues
+6. ✅ Fix any other PHP 7.0+ compatibility issues
+   - ✅ Replaced mysql2date with strtotime in File.php
 
 ## Phase 2: Security and Best Practices
 
 1. 🔄 Implement proper data sanitization and validation
    - ✅ Added sanitization to Search.php
    - ✅ Added sanitization to Ajax.php
+     - ✅ Improved sanitization in actionChangeCategory method
+     - ✅ Improved sanitization in actionNewCat method
+     - ✅ Improved sanitization in usersearch method
    - ✅ Added sanitization to AdminGuiSupport.php
    - 🔄 Continue adding sanitization to other files
 2. 🔄 Use prepared statements for all database queries

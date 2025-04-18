@@ -3,7 +3,7 @@
 class WPFB_Ajax {
 
     private static function dispatchAction(&$actions) {
-        $args = stripslashes_deep($_REQUEST);
+        $args = map_deep(stripslashes_deep($_REQUEST), 'sanitize_text_field');
 
         if (empty($args['wpfb_action']) || empty($actions[$args['wpfb_action']])) {
             die('-1');
@@ -105,7 +105,7 @@ class WPFB_Ajax {
         wpfb_loadclass('File', 'Category');
         if (isset($args['file_id'])) {
             $file_id = intval($args['file_id']);
-            if ($file_id <= 0 || ($file = WPFB_File::GetFile($file_id)) == null || !$file->CurUserCanDelete())
+            if ($file_id <= 0 || ($file = WPFB_File::GetFile($file_id)) === null || !$file->CurUserCanDelete())
                 die('-1');
 
             $data = (array(
@@ -119,7 +119,7 @@ class WPFB_Ajax {
             
         } elseif (isset($args['cat_id'])) {
             $cat_id = intval($args['cat_id']);
-            if ($cat_id <= 0 || ($cat = WPFB_Category::GetCat($cat_id)) == null || !$cat->CurUserCanEdit())
+            if ($cat_id <= 0 || ($cat = WPFB_Category::GetCat($cat_id)) === null || !$cat->CurUserCanEdit())
                 die('-1');
 
 
@@ -176,7 +176,7 @@ class WPFB_Ajax {
             $tpl = new WPFB_ListTpl('sample', $args['tpl']);
             echo $tpl->Sample($cat, $file);
             exit;
-        } elseif (empty($args['file_id']) || ($item = WPFB_File::GetFile($args['file_id'])) == null || !$file->CurUserCanAccess(true))
+        } elseif (empty($args['file_id']) || ($item = WPFB_File::GetFile($args['file_id'])) === null || !$file->CurUserCanAccess(true))
             $item = $file;
         else
             die('-1');
@@ -201,7 +201,7 @@ class WPFB_Ajax {
                 $path = substr($url, strlen($base));
                 $path_u = substr(urldecode($url), strlen($base));
                 $file = WPFB_File::GetByPath($path);
-                if ($file == null)
+                if ($file === null)
                     $file = WPFB_File::GetByPath($path_u);
             }
         } else {
@@ -240,10 +240,22 @@ class WPFB_Ajax {
 
     private static function actionChangeCategory($args) {
         wpfb_loadclass('File', 'Admin');
-        $item = WPFB_Item::GetById($args['id'], $args['type']);
-        $cat = WPFB_Category::GetCat($args['new_cat_id']);
+        
+        // Sanitize and validate input
+        $id = isset($args['id']) ? intval($args['id']) : 0;
+        $type = isset($args['type']) ? sanitize_text_field($args['type']) : '';
+        $new_cat_id = isset($args['new_cat_id']) ? intval($args['new_cat_id']) : 0;
+        
+        if ($id <= 0) {
+            wp_send_json(array('error' => __("Invalid item ID.")));
+            return;
+        }
+        
+        $item = WPFB_Item::GetById($id, $type);
+        $cat = WPFB_Category::GetCat($new_cat_id);
+        
         if ($item && $item->CurUserCanEdit() && (!$cat || $cat->CurUserCanAddFiles())) {
-            $res = $item->ChangeCategoryOrName($args['new_cat_id']);
+            $res = $item->ChangeCategoryOrName($new_cat_id);
             wp_send_json($res);
         } else {
             wp_send_json(array('error' => __("Sorry, you are not allowed to do that.")));
@@ -252,11 +264,27 @@ class WPFB_Ajax {
 
     private static function actionNewCat($args) {
         wpfb_loadclass('Category');
-        $parent_cat = empty($args['cat_parent']) ? null : WPFB_Category::GetCat($args['cat_parent']);
+        
+        // Sanitize input
+        $cat_parent = empty($args['cat_parent']) ? 0 : intval($args['cat_parent']);
+        
+        $parent_cat = $cat_parent > 0 ? WPFB_Category::GetCat($cat_parent) : null;
+        
         if (!WPFB_Core::CurUserCanCreateCat() || ($parent_cat && !$parent_cat->CurUserCanAddFiles()))
             wp_send_json(array('error' => __("Sorry, you are not allowed to do that.")));
+        
+        // Sanitize category data
+        $sanitized_args = array();
+        foreach ($args as $key => $value) {
+            if (is_string($value)) {
+                $sanitized_args[$key] = sanitize_text_field($value);
+            } else {
+                $sanitized_args[$key] = $value;
+            }
+        }
+        
         wpfb_loadclass('Admin');
-        $result = WPFB_Admin::InsertCategory($args);
+        $result = WPFB_Admin::InsertCategory($sanitized_args);
         if (isset($result['error']) && $result['error']) {
             wp_send_json(array('error' => $result['error']));
             exit;
@@ -281,11 +309,25 @@ class WPFB_Ajax {
     }
 
     private static function usersearch($args) {
-
-        if (!current_user_can('manage_categories') || empty($args['name_startsWith']))
+        // Check permissions
+        if (!current_user_can('manage_categories')) {
             die('-1');
-        $pattern = $args['name_startsWith'] . '*';
-        $users = get_users(array('search' => $pattern, 'number' => 15, 'fields' => array('ID', 'user_login', 'display_name')));
+        }
+        
+        // Validate and sanitize input
+        if (empty($args['name_startsWith']) || !is_string($args['name_startsWith'])) {
+            die('-1');
+        }
+        
+        $search_term = sanitize_text_field($args['name_startsWith']);
+        $pattern = $search_term . '*';
+        
+        // Limit number of results for security and performance
+        $users = get_users(array(
+            'search' => $pattern, 
+            'number' => 15, 
+            'fields' => array('ID', 'user_login', 'display_name')
+        ));
 
         $data = array();
         for ($i = 0; $i < count($users); $i++)

@@ -756,16 +756,16 @@ class WPFB_File extends WPFB_Item
             $this->DBSave();
     }
 
-    function SetModifiedTime($mysql_date_or_timestamp)
+    function SetModifiedTime($date_or_timestamp)
     {
-        if (!is_numeric($mysql_date_or_timestamp))
-            $mysql_date_or_timestamp = mysql2date('U', $mysql_date_or_timestamp);
+        if (!is_numeric($date_or_timestamp))
+            $date_or_timestamp = strtotime($date_or_timestamp);
         if ($this->IsLocal()) {
-            if (!@touch($this->GetLocalPath(), $mysql_date_or_timestamp))
+            if (!@touch($this->GetLocalPath(), $date_or_timestamp))
                 return false;
             $this->file_mtime = filemtime($this->GetLocalPath());
         } else {
-            $this->file_mtime = $mysql_date_or_timestamp;
+            $this->file_mtime = $date_or_timestamp;
         }
         if (!$this->locked)
             $this->DBSave();
