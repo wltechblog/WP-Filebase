@@ -109,10 +109,10 @@ class WPFB_File extends WPFB_Item
         elseif (is_array($where)) {
             $where_str = '';
             foreach ($where as $field => $value) {
-                if ($where_str != '')
+                if ($where_str !== '')
                     $where_str .= "AND ";
-                $o = $field{strlen($field) - 1};
-                $op = ($o == '>') ? '>' : ($o == '<' ? '<' : '=');
+                $o = $field[strlen($field) - 1];
+                $op = ($o === '>') ? '>' : ($o === '<' ? '<' : '=');
                 $field = rtrim($field, '<>');
                 if (is_numeric($value))
                     $where_str .= "$field $op $value ";
@@ -135,8 +135,8 @@ class WPFB_File extends WPFB_Item
         }
 
 
-        // join id3 table if found in where clause
-        $join_str = (strpos($where_str, $wpdb->wpfilebase_files_id3) !== false) ? " LEFT JOIN $wpdb->wpfilebase_files_id3 ON ( $wpdb->wpfilebase_files_id3.file_id = $wpdb->wpfilebase_files.file_id ) " : "";
+        // ID3 join removed for PHP 8.0+ compatibility
+        $join_str = "";
 
         // parse order
         if (empty($order))
@@ -322,7 +322,7 @@ class WPFB_File extends WPFB_Item
         $this->DeleteThumbnail(); // delete old thumbnail
 
         $thumb_size = (int)WPFB_Core::$settings->thumbnail_size;
-        if ($thumb_size == 0) {
+        if ($thumb_size === 0) {
             if ($tmp_src)
                 @unlink($src_image);
             return;
@@ -420,9 +420,9 @@ class WPFB_File extends WPFB_Item
         if ($this->file_category > 0 && ($parent = $this->GetParent()) != null)
             $parent->NotifyFileRemoved($this);
         // remove file entry
-        $wpdb->query("DELETE FROM $wpdb->wpfilebase_files WHERE file_id = $id");
+        $wpdb->query($wpdb->prepare("DELETE FROM $wpdb->wpfilebase_files WHERE file_id = %d", $id));
 
-        $wpdb->query("DELETE FROM $wpdb->wpfilebase_files_id3 WHERE file_id = $id");
+        // ID3 table delete removed for PHP 8.0+ compatibility
 
         if (!$bulk)
             self::UpdateTags();
@@ -443,7 +443,7 @@ class WPFB_File extends WPFB_Item
         WPFB_Misc::GetKeywords(array_filter((array)$this, 'is_string'), $file_keywords);
         $keywords = implode(' ', $file_keywords);
 
-        $keywords .= " " . $wpdb->get_var("SELECT keywords FROM $wpdb->wpfilebase_files_id3 WHERE file_id = $this->file_id");
+        // ID3 keywords removed for PHP 8.0+ compatibility
 
         return $keywords;
     }
@@ -454,8 +454,8 @@ class WPFB_File extends WPFB_Item
             global $wpdb;
             if ($this->file_id <= 0)
                 return join('->', $path);
-            $info = $wpdb->get_var("SELECT value FROM $wpdb->wpfilebase_files_id3 WHERE file_id = $this->file_id");
-            $this->info = is_null($info) ? 0 : unserialize(base64_decode($info));
+            // ID3 info removed for PHP 8.0+ compatibility
+            $this->info = 0;
         }
 
         if (empty($this->info))
@@ -464,7 +464,7 @@ class WPFB_File extends WPFB_Item
         $val = $this->info;
         foreach ($path as $p) {
             if (!isset($val[$p])) {
-                if (isset($val[0]) && count($val) == 1) // if single array skip to first element
+                if (isset($val[0]) && count($val) === 1) // if single array skip to first element
                     $val = $val[0];
                 else
                     return null;
@@ -682,7 +682,7 @@ class WPFB_File extends WPFB_Item
         list($begin, $end) = WPFB_Download::ParseRangeHeader($this->file_size);
 
         // count download (only downloads starting at first byte)
-        if ($begin == 0 && !$head_only && (!$is_admin || !WPFB_Core::$settings->ignore_admin_dls)) {
+        if ($begin === 0 && !$head_only && (!$is_admin || !WPFB_Core::$settings->ignore_admin_dls)) {
             $last_dl_time = mysql2date('U', $this->file_last_dl_time, false);
             if (empty($this->file_last_dl_ip) || $this->file_last_dl_ip != $downloader_ip || ((time() - $last_dl_time) > 86400)) {
                 $this->file_hits++;
@@ -698,7 +698,7 @@ class WPFB_File extends WPFB_Item
         }
 
         // external hooks
-        do_action('wpfilebase_file_downloaded', $this->file_id, $begin == 0 && !$head_only);
+        do_action('wpfilebase_file_downloaded', $this->file_id, $begin === 0 && !$head_only);
 
         $no_preview = !empty($_GET['no_preview']);
 

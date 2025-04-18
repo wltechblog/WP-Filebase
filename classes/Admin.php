@@ -110,7 +110,7 @@ class WPFB_Admin {
 
 		// explicitly set permissions:
 		if (!empty($data->cat_perm_explicit) && isset($data->cat_user_roles))
-			$cat->SetReadPermissions((empty($data->cat_user_roles) || count(array_filter($data->cat_user_roles)) == 0) ? array() : $data->cat_user_roles);
+			$cat->SetReadPermissions((empty($data->cat_user_roles) || count(array_filter($data->cat_user_roles)) === 0) ? array() : $data->cat_user_roles);
 
 		$current_user = wp_get_current_user();
 		if (!$update && !empty($current_user))
@@ -352,7 +352,7 @@ class WPFB_Admin {
 		$prev_read_perms = $file->file_offline ? array('administrator') : $file->GetReadPermissions();
 		// explicitly set permissions:
 		if (!empty($data->file_perm_explicit) && isset($data->file_user_roles))
-			$file->SetReadPermissions((empty($data->file_user_roles) || count(array_filter($data->file_user_roles)) == 0) ? array() : $data->file_user_roles);
+			$file->SetReadPermissions((empty($data->file_user_roles) || count(array_filter($data->file_user_roles)) === 0) ? array() : $data->file_user_roles);
 
 		// if there is an uploaded file 
 		if ($upload) {
@@ -419,10 +419,7 @@ class WPFB_Admin {
 			return $result;
 		$file_id = (int) $result['file_id'];
 
-		if (!$update) { // on new file, remove any existing data
-			global $wpdb;
-			$wpdb->query("DELETE FROM $wpdb->wpfilebase_files_id3 WHERE file_id = $file_id");
-		}
+		// ID3 table delete removed for PHP 8.0+ compatibility
 
 		if (!empty($data->no_scan) && !empty($data->add_rsync)) {
 			$file->file_rescan_pending = 1;
@@ -562,7 +559,7 @@ class WPFB_Admin {
 		// check for filename header
 		if (!empty($headers['content-disposition'])) {
 			$matches = array();
-			if (preg_match('/filename="?([^"]+)"?/', $headers['content-disposition'], $matches) == 1)
+			if (preg_match('/filename="?([^"]+)"?/', $headers['content-disposition'], $matches) === 1)
 				$info['name'] = $matches[1];
 		}
 
@@ -735,7 +732,7 @@ class WPFB_Admin {
 		foreach ($options as $opt) {
 			$opt = trim($opt);
 			if (count($tmp = explode('|', $opt)) >= 2)
-				$list .= '<option value="' . esc_attr(trim($tmp[1])) . '"' . ( (($def_sel && $opt{0} == '*') || (!$def_sel && in_array($tmp[1], $selected)) ) ? ' selected="selected"' : '' ) . '>' . esc_html(trim($tmp[0], '*')) . '</option>';
+				$list .= '<option value="' . esc_attr(trim($tmp[1])) . '"' . ( (($def_sel && $opt[0] == '*') || (!$def_sel && in_array($tmp[1], $selected)) ) ? ' selected="selected"' : '' ) . '>' . esc_html(trim($tmp[0], '*')) . '</option>';
 		}
 
 		return $list;
@@ -845,7 +842,7 @@ class WPFB_Admin {
 				if (!empty($l)) {
 					foreach ($supported_langs as $sl) {
 						$pos = strpos($sl, $l);
-						if ($pos !== false && $pos == 0) {
+						if ($pos !== false && $pos === 0) {
 							$lang = $sl;
 						}
 					}

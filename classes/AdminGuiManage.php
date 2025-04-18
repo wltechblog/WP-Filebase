@@ -32,7 +32,15 @@ class WPFB_AdminGuiManage
         if (wp_is_mobile())
             wp_enqueue_script('jquery-touch-punch');
 
-        //register_shutdown_function( create_function('','$error = error_get_last(); if( $error && $error[\'type\'] != E_STRICT ){print_r( $error );}else{return true;}') );
+        // Error handling can be implemented with a proper function if needed
+        // register_shutdown_function(function() {
+        //     $error = error_get_last();
+        //     if($error && $error['type'] != E_STRICT) {
+        //         print_r($error);
+        //     } else {
+        //         return true;
+        //     }
+        // });
 
         wpfb_loadclass('File', 'Category', 'Admin', 'Output');
 
@@ -201,7 +209,7 @@ class WPFB_AdminGuiManage
                     $nd = 0;
                     foreach ($ids as $id) {
                         $id = intval($id);
-                        if (($cat = WPFB_Category::GetCat($id)) != null) {
+                        if (($cat = WPFB_Category::GetCat($id)) !== null) {
                             $cat->Delete();
                             $nd++;
                         }
@@ -235,7 +243,7 @@ class WPFB_AdminGuiManage
                     global $wpdb;
                     $n = 0;
                     if (current_user_can('manage_options'))
-                        $n = $wpdb->query("UPDATE `$wpdb->wpfilebase_files` SET file_hits = 0 WHERE 1=1");
+                        $n = $wpdb->query("UPDATE `$wpdb->wpfilebase_files` SET file_hits = 0");
                     echo "<p>";
                     printf(__('Done. %d Files affected.'), $n);
                     echo "</p>";

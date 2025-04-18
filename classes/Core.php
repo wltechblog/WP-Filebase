@@ -340,7 +340,7 @@ class WPFB_Core
 
                 if (self::GetOpt('auto_attach_files') && ($single || self::GetOpt('attach_loop'))) {
                     wpfb_loadclass('Output');
-                    if (WPFB_Core::$settings->attach_pos == 0)
+                    if (WPFB_Core::$settings->attach_pos === 0)
                         $content = WPFB_Output::PostAttachments(true) . $content;
                     else
                         $content .= WPFB_Output::PostAttachments(true);
@@ -523,7 +523,9 @@ class WPFB_Core
 
     static function CreateTplFunc($parsed_tpl)
     {
-        return create_function('$f,$e=null', "return ($parsed_tpl);");
+        return function($f, $e=null) use ($parsed_tpl) {
+            return eval("return ($parsed_tpl);");
+        };
     }
 
     /**
