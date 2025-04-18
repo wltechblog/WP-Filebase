@@ -38,18 +38,25 @@ class WPFB_Output
             //wp_print_styles	('jquery-contextmenu');
         }
 
-        echo "<script type=\"text/javascript\">\n//<![CDATA[\n", 'wpfbConf=', json_encode($conf), ';';
+        echo "<script type=\"text/javascript\">\n//<![CDATA[\n", 'wpfbConf=', wp_json_encode($conf), ';';
 
         if ($context_menu) {
+            // Properly escape output for security
+            $edit_text = esc_js(__('Edit'));
+            $delete_text = esc_js(__('Delete'));
+            $edit_icon = esc_js(WPFB_PLUGIN_URI . "extras/jquery/contextmenu/page_white_edit.png");
+            $delete_icon = esc_js(WPFB_PLUGIN_URI . "extras/jquery/contextmenu/delete_icon.gif");
+            
             echo
             "wpfbContextMenu=[
-	{'", __('Edit'), "':{onclick:wpfb_menuEdit,icon:'" . WPFB_PLUGIN_URI . "extras/jquery/contextmenu/page_white_edit.png'}, },
+	{'", $edit_text, "':{onclick:wpfb_menuEdit,icon:'", $edit_icon, "'}, },
 	jQuery.contextMenu.separator,
-	{'", __('Delete'), "':{onclick:wpfb_menuDel,icon:'" . WPFB_PLUGIN_URI . "extras/jquery/contextmenu/delete_icon.gif'}}
+	{'", $delete_text, "':{onclick:wpfb_menuDel,icon:'", $delete_icon, "'}}
 ];\n";
         }
 
-        echo "function wpfb_ondl(file_id,file_url,file_path){ ", WPFB_Core::$settings->dlclick_js, " }";
+        // Properly escape JavaScript output
+        echo "function wpfb_ondl(file_id,file_url,file_path){ ", esc_js(WPFB_Core::$settings->dlclick_js), " }";
         echo "\n//]]>\n</script>\n";
     }
 

@@ -978,7 +978,9 @@ class WPFB_Admin {
 
 		$messages = array();
 
-		$cols = $wpdb->get_col("SHOW COLUMNS FROM $wpdb->wpfilebase_files LIKE 'file_custom_%'");
+		// Use safer query with proper table reference
+		$table_name = $wpdb->wpfilebase_files;
+		$cols = $wpdb->get_col("SHOW COLUMNS FROM $table_name LIKE 'file_custom_%'");
 
 		$custom_fields = WPFB_Core::GetCustomFields();
 		foreach ($custom_fields as $ct => $cn) {
