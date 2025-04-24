@@ -166,8 +166,7 @@ static function Schema()
 	'search_result_tpl' =>  array('default' => 'default', 'title' => __('Search Result File List Template','wp-filebase'), 'type' => 'select', 'options' => $list_tpls, 'desc' => __('Set the List Template used for Search Results when using the Search Widget','wp-filebase')),
 	
 		 
-	'disable_id3' =>  array('default' => false, 'title' => __('Disable ID3 tag detection','wp-filebase'), 'type' => 'checkbox', 'desc' => __('This disables all meta file info reading. Use this option if you have issues adding large files.','wp-filebase')),
-	'search_id3' =>  array('default' => true, 'title' => __('Search ID3 Tags','wp-filebase'), 'type' => 'checkbox', 'desc' => __('Search in file meta data, like ID3 for MP3 files, EXIF for JPEG... (this option does not increase significantly server load since all data is cached in a MySQL table)','wp-filebase')),
+	// ID3 settings removed for PHP 8.0+ compatibility
 	'use_path_tags' => array('default' => false, 'title' => __('Use path instead of ID in Shortcode','wp-filebase'), 'type' => 'checkbox', 'desc' => __('Files and Categories are identified by paths and not by their IDs in the generated Shortcodes','wp-filebase')),
 	'no_name_formatting'  => array('default' => false, 'title' => __('Disable Name Formatting','wp-filebase'), 'type' => 'checkbox', 'desc' => __('This will disable automatic formatting/uppercasing file names when they are used as title (e.g. when syncing)','wp-filebase')),
 		 

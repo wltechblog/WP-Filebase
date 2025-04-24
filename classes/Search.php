@@ -37,8 +37,6 @@ class WPFB_Search
         $wpdb->wpfilebase_files.file_post_id = $wpdb->posts.ID
         OR ($wpdb->wpfilebase_files.file_wpattach_id = $wpdb->posts.ID)
         ) ";
-        if (WPFB_Core::$settings->search_id3)
-            $join .= self::ID3Join();
         return $join;
     }
 
@@ -57,7 +55,7 @@ class WPFB_Search
         // code extract from WPs search in query.php
         global $wp_query, $wpdb;
 
-        $sentence = empty($wp_query->query_vars['sentence']) ? (empty($_GET['sentence']) ? null : stripslashes($_GET['sentence'])) : $wp_query->query_vars['sentence'];
+        $sentence = empty($wp_query->query_vars['sentence']) ? (empty($_GET['sentence']) ? null : sanitize_text_field(stripslashes($_GET['sentence']))) : $wp_query->query_vars['sentence'];
         $search_terms = array();
 
         if (!empty($s)) {
@@ -66,7 +64,9 @@ class WPFB_Search
                 $search_terms = array($s);
             else {
                 preg_match_all('/".*?("|$)|((?<=[\\s",+])|^)[^\\s",+]+/', $s, $matches);
-                $search_terms = array_map(create_function('$a', 'return trim($a, "\\"\'\\n\\r ");'), $matches[0]);
+                $search_terms = array_map(function($a) {
+                    return trim($a, "\"'\n\r ");
+                }, $matches[0]);
             }
         }
         return $search_terms;
@@ -87,7 +87,7 @@ class WPFB_Search
         }
 
         if (empty($s)) {
-            $s = empty($wp_query->query_vars['s']) ? (empty($_GET['s']) ? null : stripslashes($_GET['s'])) : $wp_query->query_vars['s'];
+            $s = empty($wp_query->query_vars['s']) ? (empty($_GET['s']) ? null : sanitize_text_field(stripslashes($_GET['s']))) : $wp_query->query_vars['s'];
             if (empty($s)) return null;
         }
         $exact = !empty($wp_query->query_vars['exact']);
@@ -97,7 +97,7 @@ class WPFB_Search
 
         // TODO: search fields with match...
         foreach ($search_terms as $term) {
-            $where .= ($not = ($term{0} === '-')) ? " AND NOT (" : " AND (";
+            $where .= ($not = ($term[0] === '-')) ? " AND NOT (" : " AND (";
             if ($not) $term = substr($term, 1);
 
             $wc = strpos($term, '*') !== false; // check for wildcard
@@ -108,8 +108,7 @@ class WPFB_Search
                 $where .= " {$or}({$col} LIKE '" . ($wc ? str_replace('*', '%', $term) : "{$p}{$term}{$p}") . "')";
                 if (empty($or)) $or = 'OR ';
             }
-            // !$not -> dont exclude from id3 files
-            if (!$not && $search_id3) $where .= " OR ({$wpdb->wpfilebase_files_id3}.keywords LIKE '{$p}{$term}{$p}')"; // TODO: MATCH func here
+            // ID3 search removed for PHP 8.0+ compatibility
             $where .= ") ";
         }
         $where .= ")";
@@ -128,9 +127,8 @@ class WPFB_Search
 
         $is_wp_search = !empty($_GET['s']) && empty($_GET['wpfb_s']);
 
-        $search_id3 = WPFB_Core::$settings->search_id3;
         $no_matches = false;
-        $where = self::SearchWhereSql($search_id3);
+        $where = self::SearchWhereSql(false);
 
         $where = "($where AND (" . WPFB_File::GetReadPermsWhere() . "))";
 
@@ -163,11 +161,7 @@ class WPFB_Search
         return $groupby;
     }
 
-    static function ID3Join()
-    { // deprecated TODO
-        global $wpdb;
-        return " LEFT JOIN $wpdb->wpfilebase_files_id3 ON ( $wpdb->wpfilebase_files_id3.file_id = $wpdb->wpfilebase_files.file_id ) ";
-    }
+    // ID3Join method removed for PHP 8.0+ compatibility
 
 // used for filebrowser search results
     static function FileSearchContent(&$ref_content)
@@ -178,7 +172,7 @@ class WPFB_Search
             $ref_content .= $tpl->Generate(null, array('page_limit' => WPFB_Core::$settings->filelist_num
             ));
         } else {
-            $files = WPFB_File::GetFiles2(self::SearchWhereSql(WPFB_Core::$settings->search_id3, stripslashes($_GET['wpfb_s'])), WPFB_Core::$settings->hide_inaccessible);
+            $files = WPFB_File::GetFiles2(self::SearchWhereSql(false, sanitize_text_field(stripslashes($_GET['wpfb_s']))), WPFB_Core::$settings->hide_inaccessible);
             foreach ($files as $file)
                 $ref_content .= $file->GenTpl2();
         }

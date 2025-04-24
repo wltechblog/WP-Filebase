@@ -53,9 +53,9 @@ class WPFB_Download
         $limit_month = (WPFB_Core::$settings->traffic_month * 1073741824); //GiB
         $limit_day   = (WPFB_Core::$settings->traffic_day * 1048576); // MiB
 
-        return (($limit_month == 0
+        return (($limit_month === 0
                 || ($traffic['month'] + $file_size) < $limit_month)
-            && ($limit_day == 0
+            && ($limit_day === 0
                 || ($traffic['today'] + $file_size) < $limit_day));
     }
 
@@ -493,7 +493,7 @@ class WPFB_Download
 
         foreach ($no_range_types as $t) {
             $p = strpos($file_type, $t);
-            if ($p !== false && $p == 0) {
+            if ($p !== false && $p === 0) {
                 return false;
             }
         }
@@ -599,7 +599,7 @@ class WPFB_Download
         header("Last-Modified: " . gmdate("D, d M Y H:i:s",
                 $no_cache ? time() : $time) . " GMT");
 
-        if ( ! empty($md5_hash) && $md5_hash{0} != '#') { // check if fake md5
+        if ( ! empty($md5_hash) && $md5_hash[0] != '#') { // check if fake md5
             $pmd5 = @pack('H32', $md5_hash);
             if ( ! empty($pmd5)) {
                 header("Content-MD5: " . @base64_encode($pmd5));
@@ -682,12 +682,6 @@ class WPFB_Download
         // close db connection
         if (method_exists($wpdb, 'close')) {
             $wpdb->close();
-        } elseif (function_exists('mysql_close')) {
-            if ( ! empty($wpdb->dbh) && is_resource($wpdb->dbh)) {
-                @mysql_close($wpdb->dbh);
-            } else {
-                @mysql_close();
-            }
         }
 
         @ob_flush();
@@ -715,7 +709,7 @@ class WPFB_Download
 
             $cur = $begin;
 
-            while ( ! @feof($fh) && $cur <= $end && @connection_status() == 0) {
+            while ( ! @feof($fh) && $cur <= $end && @connection_status() === 0) {
                 $nbytes = min($buffer_size, $end - $cur + 1);
                 $ts     = microtime(true);
 

@@ -166,8 +166,8 @@ class WPFB_TreeviewAdmin
                                 if (!data.error) {
                                     var dLi = jQuery('#' + idp + tid.join('-')); // the dragged
                                     var tUl = jQuery('#' + idp + 'cat-' + id).children('ul').first();
-                                    var toRoot = (id === 0 || id == wpfb_getFileBrowserParams('<?php echo $id ?>').base);
-                                    if(tUl.length == 0 && toRoot) tUl = jQuery("#<?php echo $id ?>");
+                                    var toRoot = (id === 0 || id === wpfb_getFileBrowserParams('<?php echo $id ?>').base);
+                                    if(tUl.length === 0 && toRoot) tUl = jQuery("#<?php echo $id ?>");
                                     if (li.hasClass('expandable')) {
                                         dLi.remove();
                                         jQuery('.hitarea', li).click();
@@ -260,7 +260,7 @@ class WPFB_TreeviewAdmin
                 fileQueued: function (up, file) {
                     var idp = wpfb_getFileBrowserIDP('<?php echo $id ?>');
                     var cat_id = up.settings.multipart_params["cat_id"];
-                    var toRoot = (cat_id === 0 || cat_id == wpfb_getFileBrowserParams('<?php echo $id ?>').base);
+                    var toRoot = (cat_id === 0 || cat_id === wpfb_getFileBrowserParams('<?php echo $id ?>').base);
                     var catUl = toRoot ? jQuery('#<?php echo $id ?>') : jQuery('#' + idp + 'cat-' + cat_id).children('ul').first();
                     if (catUl.length) {
                         var catUploadUl = toRoot ? catUl : catUl.nextAll('ul.uploads');

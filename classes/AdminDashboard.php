@@ -241,7 +241,7 @@ class WPFB_AdminDashboard
                 src="http://fabi.me/misc/wpfb_icon.gif?lang=<?php if (defined('WPLANG')) {
                     echo WPLANG;
                 } ?>" alt="" /><?php } ?> fabi.me</a><br/>
-        Includes the great file analyzer <a href="http://www.getid3.org/">getID3()</a> by James Heinrich.<br/>
+
     </p>
         <?php if (current_user_can('edit_files')) { ?>
         

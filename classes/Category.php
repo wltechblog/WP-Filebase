@@ -241,7 +241,7 @@ class WPFB_Category extends WPFB_Item
         // delete the category
         @unlink($this->GetLocalPath());
         @rmdir($this->GetLocalPath());
-        $wpdb->query("DELETE FROM $wpdb->wpfilebase_cats WHERE cat_id = " . (int)$this->GetId());
+        $wpdb->query($wpdb->prepare("DELETE FROM $wpdb->wpfilebase_cats WHERE cat_id = %d", $this->GetId()));
 
         return array('error' => false);
     }

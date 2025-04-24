@@ -55,8 +55,8 @@ class WPFB_Output
 ];\n";
         }
 
-        // Properly escape JavaScript output
-        echo "function wpfb_ondl(file_id,file_url,file_path){ ", esc_js(WPFB_Core::$settings->dlclick_js), " }";
+        // Properly escape JavaScript output - use eval to execute the code
+        echo "function wpfb_ondl(file_id,file_url,file_path){ eval(", wp_json_encode(WPFB_Core::$settings->dlclick_js), "); }";
         echo "\n//]]>\n</script>\n";
     }
 

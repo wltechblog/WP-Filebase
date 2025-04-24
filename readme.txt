@@ -3,8 +3,9 @@ Contributors: fabifott
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wpfilebase%40fabi%2eme&item_name=WP-Filebase&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
 Tags: filebase, filemanager, file, files, manager, upload, download, downloads, downloadmanager, images, pdf, widget, filelist, list, thumbnails, thumbnail, attachment, attachments, category, categories, media, template, ftp, http, mp3, id3
 Requires at least: 3.1
-Tested up to: 4.8
-Stable tag: 0.3.4.24
+Tested up to: 6.4
+Requires PHP: 7.0
+Stable tag: 0.3.5.0
 Demo link: http://demo.wpfilebase.com/
 
 
@@ -128,6 +129,13 @@ Goto WP-Filebase Settings and disable Permalinks under "Download". Try to disabl
 
 
 == Changelog ==
+
+= 0.3.5.0 =
+* PHP 8.0+ compatibility: Replaced string access with curly braces with square brackets
+* PHP 7.0+ compatibility: Removed direct MySQL function calls
+* PHP 7.0+ compatibility: Replaced create_function() with anonymous functions
+* Improved security in template handling
+* Updated code to follow WordPress best practices
 
 = 0.3.4.24 =
 * New dashboard

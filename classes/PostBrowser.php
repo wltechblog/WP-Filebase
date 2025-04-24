@@ -107,7 +107,7 @@ class WPFB_PostBrowser {
             'post_status' => 'any' // undoc: get private posts aswell
         ));
 
-        if ($id == 0)
+        if ($id === 0)
             $terms = array_merge($terms, get_pages(/* array('parent' => $id) */));
 
         foreach ($terms as $t) {

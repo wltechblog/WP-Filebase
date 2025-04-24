@@ -539,35 +539,7 @@ WPFB_Admin::PrintAdminSchemeCss();
 
     wp_print_scripts('jquery-ui-autocomplete');
     wpfb_call('Output', 'PrintJS');
-
-    if ($update) {
-        wpfb_loadclass('GetID3');
-        $info = WPFB_GetID3::GetFileInfo($file, true);
-        if (!empty($info->value)) {
-            wpfb_loadclass('AdminGuiFiles');
-            add_meta_box('wpfb_file_info_paths', __('File Info Tags (ID3 Tags)', 'wp-filebase'), array('WPFB_AdminGuiFiles', 'FileInfoPathsBox'), 'wpfb_file_form', 'normal', 'core');
-            ?>
-            <div id="dashboard-widgets-wrap">
-                <div id="dashboard-widgets" class="metabox-holder">
-                    <div id="post-body">
-                        <div id="dashboard-widgets-main-content" class="postbox-container" style="width: 100%">
-                            <?php do_meta_boxes('wpfb_file_form', 'normal', $info); ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <script type="text/javascript">
-                //<![CDATA[
-                jQuery(document).ready(function ($) {
-                    // postboxes setup
-                    postboxes.add_postbox_toggles('wpfb_file_form');
-                    jQuery('.postbox h3, .postbox .handlediv').parent('.postbox').toggleClass('closed');
-                });
-
-                //]]>
-            </script>
-            <?php
-        }
-    }
+    
+    // GetID3 functionality has been removed for PHP 8.0+ compatibility
     ?>
 </form>

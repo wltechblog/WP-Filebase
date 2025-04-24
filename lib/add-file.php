@@ -45,6 +45,7 @@ $visual_editor = get_user_option(WPFB . '_visual_editor') && !$in_widget && !$in
 
 
 WPFB_Admin::PrintAdminSchemeCss();
+wpfb_call('Output', 'PrintJS'); // Initialize wpfbConf JavaScript variable
 ?>
 
 <?php $adv_uploader->PrintScripts(); ?>
@@ -309,8 +310,8 @@ WPFB_Admin::PrintAdminSchemeCss();
 				<td><input type="text" name="file_post_id" class="small-text" size="8" style="width:60px; text-align:right;" id="file_post_id" value="<?php echo esc_attr($file->file_post_id); ?>" /> <span id="file_post_title" style="font-style:italic;"><?php if ($file->file_post_id > 0) echo get_the_title($file->file_post_id); ?></span> <a href="javascript:;" class="button" onclick="WPFB_PostBrowser('file_post_id', 'file_post_title');"><?php _e('Select') ?></a></td>
 			<?php } else { ?>
 				<td><input type="hidden" name="file_post_id" id="file_post_id" value="<?php echo esc_attr($file->file_post_id); ?>" /></td>
-<?php } ?>
-<?php if ($exform) { ?>
+			<?php } ?>
+			<?php if ($exform) { ?>
 				<th scope="row" valign="top"><label for="file_hits"><?php _e('Download Counter', 'wp-filebase') ?></label></th>
 				<td><input type="text" name="file_hits" class="small-text" id="file_hits" value="<?php echo (int) $file->file_hits; ?>" /></td>
 			</tr>
@@ -318,33 +319,37 @@ WPFB_Admin::PrintAdminSchemeCss();
 				<?php if (WPFB_Core::$settings->platforms) { ?>
 					<th scope="row" valign="top"><label for="file_platforms[]"><?php _e('Platforms', 'wp-filebase') ?></label></th>
 					<td><select name="file_platforms[]" size="40" multiple="multiple" id="file_platforms[]" style="height: 80px;"><?php echo WPFB_Admin::MakeFormOptsList('platforms', $file ? $file->file_platform : null, true) ?></select></td>
-				<?php } else { ?><th></th><td></td><?php
+				<?php } else { ?>
+					<th></th><td></td><?php
 				}
 				if (WPFB_Core::$settings->requirements) {
 					?>
 					<th scope="row" valign="top"><label for="file_requirements[]"><?php _e('Requirements', 'wp-filebase') ?></label></th>
 					<td><select name="file_requirements[]" size="40" multiple="multiple" id="file_requirements[]" style="height: 80px;"><?php echo WPFB_Admin::MakeFormOptsList('requirements', $file ? $file->file_requirement : null, true) ?></select></td>
-				<?php } else { ?><th></th><td></td><?php } ?>
+				<?php } else { ?>
+					<th></th><td></td><?php } ?>
 			</tr>
 			<tr>
 				<?php if (WPFB_Core::$settings->languages) { ?>
 					<th scope="row" valign="top"><label for="file_languages[]"><?php _e('Languages') ?></label></th>
-					<td  class="form-field"><select name="file_languages[]" size="40" multiple="multiple" id="file_languages[]" style="height: 80px;"><?php echo WPFB_Admin::MakeFormOptsList('languages', $file ? $file->file_language : null, true) ?></select></td>
-	<?php } else { ?><th></th><td></td><?php } ?>
+					<td class="form-field"><select name="file_languages[]" size="40" multiple="multiple" id="file_languages[]" style="height: 80px;"><?php echo WPFB_Admin::MakeFormOptsList('languages', $file ? $file->file_language : null, true) ?></select></td>
+				<?php } else { ?>
+					<th></th><td></td><?php } ?>
 
 				<th scope="row" valign="top"><label for="file_direct_linking"><?php _e('Direct linking', 'wp-filebase') ?></label></th>
 				<td>
-					<fieldset><legend class="hidden"><?php _e('Direct linking') ?></legend>
-						<label title="<?php _e('Yes') ?>"><input type="radio" name="file_direct_linking" value="1" <?php checked('1', $file->file_direct_linking); ?>/> <?php _e('Allow direct linking', 'wp-filebase') ?></label><br />
+					<fieldset>
+						<legend class="hidden"><?php _e('Direct linking') ?></legend>
+						<label title="<?php _e('Yes') ?>"><input type="radio" name="file_direct_linking" value="1" <?php checked('1', $file->file_direct_linking); ?>/> <?php _e('Allow direct linking', 'wp-filebase') ?></label><br/>
 						<label title="<?php _e('No') ?>"><input type="radio" name="file_direct_linking" value="0" <?php checked('0', $file->file_direct_linking); ?>/> <?php _e('Redirect to post', 'wp-filebase') ?></label>
 						
 					</fieldset>
 				</td>
-<?php } ?>
+				<?php } ?>
 		</tr>
 		<tr <?php if (!$visual_editor) { ?>class="form-field"<?php } ?>>
 			<th scope="row" valign="top"><label for="file_description"><?php _e('Description') ?></label>
-				<?php if (!$in_widget && !$in_editor) { ?><br /><br />
+				<?php if (!$in_widget && !$in_editor) { ?><br/><br/>
 					<a style="font-style:normal; font-size:9px; padding:3px; margin:0;" href="<?php echo add_query_arg('visual_editor', ($visual_editor ? '0' : '1')) . '#' . $action; ?>" class="add-new-h2"><?php _e($visual_editor ? 'Simple Editor' : 'Visual Editor', 'wp-filebase') ?></a>
 				<?php } ?>
 			</th>
@@ -355,21 +360,20 @@ WPFB_Admin::PrintAdminSchemeCss();
 				} else {
 					?>
 					<textarea name="file_description" id="file_description" rows="5" cols="50" style="width: 97%;"><?php echo esc_html($file->file_description); ?></textarea>
-<?php } ?>
+				<?php } ?>
 			</td>
 		</tr>
 		<tr class="form-field">
 			<th scope="row" valign="top"><label for="file_tags"><?php _e('Tags') ?></label></th>
 			<td colspan="3"><input name="file_tags" id="file_tags" type="text" value="<?php echo esc_attr(trim($file->file_tags, ',')); ?>" size="<?php echo ($in_editor || $in_widget) ? 20 : 40 ?>" maxlength="250" autocomplete="off" /></td>
 		</tr>
-<?php if ($exform) { ?>
+		<?php if ($exform) { ?>
 			<tr>
 				<th scope="row" valign="top"><?php _e('Access Permission', 'wp-filebase') ?></th>
 				<td>
-	<?php if ($update) { ?><input type="hidden" name="file_perm_explicit" value="1" />
-	<?php } else { ?>		
-						<label><input type="radio" name="file_perm_explicit" value="0" <?php checked(true); ?> onchange="jQuery('#file_perm_wrap').hide()" /><?php _e('Inherit Permissions', 'wp-filebase') ?> (<span id="file_inherited_permissions_label"></span>)</label>
-						<br />
+					<?php if ($update) { ?><input type="hidden" name="file_perm_explicit" value="1" />
+					<?php } else { ?>
+						<label><input type="radio" name="file_perm_explicit" value="0" <?php checked(true); ?> onchange="jQuery('#file_perm_wrap').hide()" /><?php _e('Inherit Permissions', 'wp-filebase') ?> (<span id="file_inherited_permissions_label"></span>)</label><br />
 						<label><input type="radio" name="file_perm_explicit" value="1" onchange="jQuery('#file_perm_wrap').show()" /><?php _e('Explicitly set permissions', 'wp-filebase') ?></label>
 					<?php } ?>
 					<div id="file_perm_wrap" <?php
@@ -377,7 +381,7 @@ WPFB_Admin::PrintAdminSchemeCss();
 						echo 'class="hidden"';
 					}
 					?>>
-	<?php _e('Limit file access by selecting one or more user roles.') ?>
+						<?php _e('Limit file access by selecting one or more user roles.') ?>
 						<div id="file_user_roles"><?php WPFB_Admin::RolesCheckList('file_user_roles', $user_roles) ?></div>
 					</div>
 				</td>
@@ -408,33 +412,6 @@ WPFB_Admin::PrintAdminSchemeCss();
 				return false;"<?php } ?>/></p>
 
 	<?php
-	if ($update) {
-		wpfb_loadclass('GetID3');
-		$info = WPFB_GetID3::GetFileInfo($file, true);
-		if (!empty($info->value)) {
-			wpfb_loadclass('AdminGuiFiles');
-			add_meta_box('wpfb_file_info_paths', __('File Info Tags (ID3 Tags)', 'wp-filebase'), array('WPFB_AdminGuiFiles', 'FileInfoPathsBox'), 'wpfb_file_form', 'normal', 'core');
-			?>
-			<div id="dashboard-widgets-wrap">
-				<div id="dashboard-widgets" class="metabox-holder">
-					<div id="post-body">
-						<div id="dashboard-widgets-main-content" class="postbox-container" style="width: 100%">
-		<?php do_meta_boxes('wpfb_file_form', 'normal', $info); ?>
-						</div>
-					</div>
-				</div>
-			</div>
-			<script type="text/javascript">
-				//<![CDATA[
-				jQuery(document).ready(function ($) {
-					// postboxes setup					
-					postboxes.add_postbox_toggles('wpfb_file_form');
-					jQuery('.postbox h3, .postbox .handlediv').parent('.postbox').toggleClass('closed');
-				});
-				//]]>
-			</script>
-			<?php
-		}
-	}
+	// GetID3 functionality has been removed for PHP 8.0+ compatibility
 	?>
 </form>

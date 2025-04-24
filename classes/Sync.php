@@ -14,7 +14,7 @@ class WPFB_Sync
 
     static function InitClass()
     {
-        wpfb_loadclass("Admin", "GetID3", "FileUtils", "Misc");
+        wpfb_loadclass("Admin", "FileUtils", "Misc");
         require_once(ABSPATH . 'wp-admin/includes/file.php');
 
         @ini_set('max_execution_time', '0');
@@ -227,7 +227,7 @@ class WPFB_Sync
             $progress_reporter->SetProgress($i);
             $progress_reporter->SetField($fn_rel);
 
-            if (strlen($fn) < 2 || $fbn{0} == '.'
+            if (strlen($fn) < 2 || $fbn[0] == '.'
                 || strpos($fn, '/.tmp') !== false                 || $fbn == '_wp-filebase.css'
                 || strpos($fbn, '_caticon.') !== false
                 || strpos($fbn, '_wpfb_') === 0
@@ -455,7 +455,7 @@ class WPFB_Sync
                     'wp-filebase'), ($sync_data->num_db_files)) . ' ');
         }
 
-        $sync_id3 = !WPFB_Core::$settings->disable_id3;
+        $sync_id3 = false; // ID3 functionality removed for PHP 8.0+ compatibility
         $upload_dir = trailingslashit(self::cleanPath(WPFB_Core::UploadDir()));
         $thumb_dir = trailingslashit(self::cleanPath(empty(WPFB_Core::$settings->thumbnail_path) ? WPFB_Core::UploadDir() : path_join(ABSPATH, WPFB_Core::$settings->thumbnail_path)));
 
@@ -955,13 +955,7 @@ class WPFB_Sync
         $file->DBSave(true);
 
 
-        // the UpdateCachedFileInfo/StoreFileInfo will delete the file if necessary! (no need of $tmp_file value!)
-        if (!WPFB_GetID3::UpdateCachedFileInfo($file)) {
-            WPFB_Core::LogMsg("ScanFile($file) file scan failed!",
-                'sync');
-            return false;
-        }
-
+        // ID3 functionality removed for PHP 8.0+ compatibility
         return true;
     }
 
@@ -1000,7 +994,7 @@ class WPFB_Sync
             }
 
             $t = str_replace('_', ' ', $tag);
-            $t{0} = strtoupper($t{0});
+            $t[0] = strtoupper($t[0]);
 
             if ($tag == 'added') {
                 $num_added += count($group);

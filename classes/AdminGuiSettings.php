@@ -214,7 +214,7 @@ class WPFB_AdminGuiSettings {
 					<input type="submit" name="submit" value="<?php _e('Save Changes'/* def */) ?>" class="button-primary" />
 				</p>
 				<?php
-				$misc_tags = array('disable_id3', 'search_id3', 'thumbnail_path', 'use_path_tags', 'no_name_formatting');
+				$misc_tags = array('thumbnail_path', 'use_path_tags', 'no_name_formatting');
 				if (function_exists('wp_admin_bar_render'))
 					$misc_tags[] = 'admin_bar';
 

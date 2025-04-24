@@ -127,7 +127,7 @@ class WPFB_ListTpl {
 		
 		if($search_term || WPFB_Core::$file_browser_search) { // search
 			wpfb_loadclass('Search');
-			$where = WPFB_Search::SearchWhereSql(WPFB_Core::$settings->search_id3, $search_term);
+			$where = WPFB_Search::SearchWhereSql(false, $search_term);
 		} else $where = '1=1';
 		
 		$num_total_files = 0;

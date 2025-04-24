@@ -66,8 +66,18 @@ static function ParseTplExp($exp)
 	// parse special vars
 	$exp = str_replace('%post_id%', 'get_the_ID()', $exp);
 	
-	// remove critical functions TODO: still a bit unsecure, only allow some functions
-	$exp = str_replace(array('eval','mysql_query', 'mysql', '$wpdb', 'fopen', 'readfile', 'include(','include_once','require(','require_once','file_get_contents','file_put_contents','copy(','unlink','rename('), '', $exp);
+	// remove critical functions and improve security by removing potentially dangerous functions
+	$dangerous_functions = array(
+		'eval', 'exec', 'system', 'shell_exec', 'passthru', 'proc_open', 'popen',
+		'mysql_query', 'mysqli_query', 'mysql', 'mysqli', '$wpdb',
+		'fopen', 'readfile', 'file_get_contents', 'file_put_contents', 'fwrite',
+		'include', 'include_once', 'require', 'require_once',
+		'copy', 'unlink', 'rename', 'rmdir', 'mkdir',
+		'phpinfo', 'posix_', 'curl_', 'base64_decode', 'base64_encode',
+		'chmod', 'chown', 'chgrp', 'touch'
+	);
+	
+	$exp = str_replace($dangerous_functions, '', $exp);
 	
 	$exp = preg_replace('/%([a-z0-9_\/]+?)%/i', '($f->get_tpl_var(\'$1\',$e))', $exp);
 	$exp = preg_replace('/([^\w])AND([^\w])/', '$1&&$2', $exp);
